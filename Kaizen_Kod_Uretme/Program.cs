@@ -1,83 +1,74 @@
 ﻿using System;
-using System.Reflection.Emit;
+using System.Collections.Generic;
 using System.Text;
-
 
 public class CodeGenerator
 {
+    // Geçerli karakterlerin tanımlanması
     private const string AllowedCharacters = "ACDEFGHKLMNPRTXYZ234579";
 
+    // Kod uzunluğunun tanımlanması
     private const int CodeLength = 8;
 
-    private readonly Random random;
-
-    private readonly List<string> GeneratedCodes = new List<string>();
-
-    // Yapıcı metot, bir CodeGenerator nesnesi oluşturulduğunda çağrılır.
-    public CodeGenerator()
-    {
-        // Rastgele nesnesi oluşturulurken Guid'in karma değeri kullanılır.
-        random = new Random(Guid.NewGuid().GetHashCode());
-    }
-
-    // Belirli bir sayıda kod üretmek için kullanılan metot.
-    public List<string> GenerateCodes(int count)
-    {
-        // Belirtilen sayıda kod üretmek için döngü oluşturulur.
-        for (int i = 0; i < count; i++)
-        {
-            // Kod üretilir ve listeye eklenir.
-            var code = GenerateCode();
-            GeneratedCodes.Add(code);
-        }
-        // Oluşturulan kodların listesi döndürülür.
-        return GeneratedCodes;
-    }
+    // Rastgele sayı üretmek için nesne oluşturulması
+    private readonly Random random = new Random();
 
     // Tek bir kod üretmek için kullanılan metot.
     public string GenerateCode()
     {
-        // Kodu oluşturmak için StringBuilder kullanılır.
+        // Kod oluşturmak için string builder oluşturma
         StringBuilder codeBuilder = new StringBuilder();
 
-        // Belirtilen uzunlukta kod oluşturulur.
+        // Belirtilen uzunlukta kod oluşturmak için döngü
         for (int i = 0; i < CodeLength; i++)
         {
-            // Rastgele bir karakter seçilir ve kod oluşturucuya eklenir.
+            // Rastgele bir karakter seçme
             int randomIndex = random.Next(0, AllowedCharacters.Length);
             char randomChar = AllowedCharacters[randomIndex];
+
+            // Seçilen karakteri kodun sonuna ekleme
             codeBuilder.Append(randomChar);
         }
-        // Oluşturulan kod alınır.
-        string code = codeBuilder.ToString();
 
-        // Oluşturulan kod daha önce üretilmiş kodlar arasında yoksa kod döndürülür, aksi takdirde tekrar üretilir.
-        return CheckCode(code) ? code : GenerateCode();
+        // Oluşturulan kodu string'e dönüştürme ve döndürme
+        return codeBuilder.ToString();
     }
 
-    // Üretilen bir kodun daha önce üretilmiş kodlar arasında olup olmadığını kontrol eden metot.
-    public bool CheckCode(string codeToCheck)
+    // Belirtilen sayıda kod üretmek için kullanılan metot.
+    public List<string> GenerateCodes(int count)
     {
-        // Kodun listeye eklenip eklenmediği kontrol edilir.
-        return GeneratedCodes.Contains(codeToCheck) ? false : true;
+        HashSet<string> generatedCodes = new HashSet<string>();
+        List<string> codes = new List<string>();
+
+        // Belirtilen sayıda benzersiz kod üretmek için döngü
+        while (codes.Count < count)
+        {
+            var code = GenerateCode();
+            if (!generatedCodes.Contains(code))
+            {
+                generatedCodes.Add(code);
+                codes.Add(code);
+            }
+        }
+
+        return codes;
     }
 }
 
-// Ana uygulama sınıfı.
 class Program
 {
-    // Programın giriş noktası.
     static void Main(string[] args)
     {
-        // Kod üreticiyi başlatır.
+        // Kod üretici nesnesinin oluşturulması
         CodeGenerator generator = new CodeGenerator();
 
-        // Belirtilen sayıda kod üretilir ve konsola yazdırılır.
-        var value = generator.GenerateCodes(1000);
-        foreach (var item in value)
+        // Belirtilen sayıda kod üretilmesi
+        var codes = generator.GenerateCodes(1000);
+
+        // Üretilen kodların yazdırılması
+        foreach (var code in codes)
         {
-            Console.WriteLine(item);
+            Console.WriteLine(code);
         }
     }
 }
-
