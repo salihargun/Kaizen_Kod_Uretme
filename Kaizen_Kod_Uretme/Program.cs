@@ -4,6 +4,8 @@ using System.Text;
 
 public class CodeGenerator
 {
+    public List<string> UniqueCodes { get; set; } = new List<string>();
+
     // Geçerli karakterlerin tanımlanması
     private const string AllowedCharacters = "ACDEFGHKLMNPRTXYZ234579";
 
@@ -13,42 +15,54 @@ public class CodeGenerator
     // Rastgele sayı üretmek için nesne oluşturulması
     private readonly Random random = new Random();
 
-    // Tek bir kod üretmek için kullanılan metot.
+    public CodeGenerator()
+    {
+        // Tüm karakter kombinasyonlarının üretilmesi ve UniqueCodes listesine eklenmesi
+        string uniqueCode = string.Empty;
+        foreach (var x in AllowedCharacters)
+        {
+            foreach (var y in AllowedCharacters)
+            {
+                foreach (var z in AllowedCharacters)
+                {
+                    uniqueCode = x.ToString() + y + z;
+                    UniqueCodes.Add(uniqueCode);
+                }
+            }   
+        }
+    }
+
+    // Tek bir kod üretme metodu
     public string GenerateCode()
     {
-        // Kod oluşturmak için string builder oluşturma
+        // Önceden oluşturulmuş benzersiz kodların rastgele seçilmesi
         StringBuilder codeBuilder = new StringBuilder();
+        int randomIndex = random.Next(0, UniqueCodes.Count);
+        string randomChar = UniqueCodes[randomIndex];
+        codeBuilder.Append(randomChar);
+        UniqueCodes.Remove(randomChar);
 
-        // Belirtilen uzunlukta kod oluşturmak için döngü
-        for (int i = 0; i < CodeLength; i++)
+        // Geriye kalan karakterlerin rastgele seçilip eklenmesi
+        for (int i = 0; i < CodeLength-3; i++)
         {
-            // Rastgele bir karakter seçme
-            int randomIndex = random.Next(0, AllowedCharacters.Length);
-            char randomChar = AllowedCharacters[randomIndex];
+            int randomIndex1 = random.Next(0, AllowedCharacters.Length);
+            char randomChar1 = AllowedCharacters[randomIndex1];
 
-            // Seçilen karakteri kodun sonuna ekleme
-            codeBuilder.Append(randomChar);
+            codeBuilder.Append(randomChar1);
         }
 
-        // Oluşturulan kodu string'e dönüştürme ve döndürme
         return codeBuilder.ToString();
     }
 
-    // Belirtilen sayıda kod üretmek için kullanılan metot.
+    // Belirli bir sayıda kod üretme metodu
     public List<string> GenerateCodes(int count)
     {
-        HashSet<string> generatedCodes = new HashSet<string>();
         List<string> codes = new List<string>();
 
-        // Belirtilen sayıda benzersiz kod üretmek için döngü
         while (codes.Count < count)
         {
             var code = GenerateCode();
-            if (!generatedCodes.Contains(code))
-            {
-                generatedCodes.Add(code);
-                codes.Add(code);
-            }
+            codes.Add(code);
         }
 
         return codes;
